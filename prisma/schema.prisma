@@ -1,0 +1,35 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+datasource db {
+  provider = "postgresql"
+  url      = "postgresql://saberhosneydev:811402@localhost:5432/saberhosneydev?schema=public"
+  //Usually we use url = env("DATABASE_URL") but we used a direct connection string here to access Prisma Studio. This is prohibited in production.
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id        Int       @id @default(autoincrement())
+  name      String
+  email     String    @unique
+  password  String
+  projects  Project[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@map("users")
+}
+
+model Project {
+  id           Int      @id @default(autoincrement())
+  name         String
+  description  String
+  contributors User[]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("projects")
+}
