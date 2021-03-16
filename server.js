@@ -2,26 +2,31 @@ var express = require('express');
 var { graphqlHTTP } = require('express-graphql');
 var { buildSchema } = require('graphql');
 const { PrismaClient } = require("@prisma/client");
+const bcrypt = require('bcrypt');
 
+const saltRounds = 10;
 const prisma = new PrismaClient();
 var schema = buildSchema(`
 	type Query {
 		users: [User]
 		user(id: Int!): User
 		project(id: Int!): Project
-		projects: [Project]
+		createUser(name: String!, email: String!, password: String!): functionResult
+		authenticateUser(email: String!, password: String!): functionResult
 	}
 	type User {
 		id: Int!
 		name: String!
-		email: String!
-		projects:  [Project!]
+		projects:  [Project!]!
 	  }
 	  type Project {
 		id: Int!
 		name: String!
 		description: String!
 		contributors: [User!]!
+	  }
+	  type functionResult {
+		  result: Boolean!
 	  }
 `);
 
@@ -44,17 +49,31 @@ var root = {
 	projects: async () => {
 		return await prisma.project.findMany({ include: { contributors: true } }).finally(() => { prisma.$disconnect() });
 	},
-	project: async (args) => {
-		return await prisma.project.findUnique({
-			where: {
-				contributors: {
-					id: args.id
-				}
-			},
-			include: {
-				contributors: true
+	createUser: async (args) => {
+		let result = undefined;
+		await prisma.user.create({
+			data: {
+				name: args.name,
+				email: args.email,
+				password: bcrypt.hashSync(args.password, saltRounds)
 			}
-		}).finally(() => { prisma.$disconnect() });
+		}).then(() => { result = true }, () => { result = false }).finally(() => { prisma.$disconnect() });
+		return {
+			result: result
+		}
+	},
+	authenticateUser: async (args) => {
+		let verified = undefined;
+		await prisma.user.findUnique({
+			where: {
+				email: args.email
+			}
+		}).then((user) => {
+			verified = bcrypt.compareSync(args.password, user.password);
+		}).finally(() => { prisma.$disconnect(); });
+		return {
+			result: verified
+		}
 	},
 };
 
