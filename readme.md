@@ -17,17 +17,17 @@ users {
 
 ```graphql
 query {
-  # createUser(name: "John Doe", email:"johndoe@example.com", password: "12345678"){
-  #   result
-  # }
-  # user(id: 1) {
-  #   name,
-  #   projects{
-  #     name
-  #   }
-  # }
-  # authenticateUser(email:"johndoe@example.com", password: "12345678"){
-  #   result
-  # }
+  createUser(name: "John Doe", email:"johndoe@example.com", password: "12345678"){
+    result
+  }
+  user(id: 1) {
+    name,
+    projects{
+      name
+    }
+  }
+  authenticateUser(email:"johndoe@example.com", password: "12345678"){
+    result
+  }
 }
 ```
